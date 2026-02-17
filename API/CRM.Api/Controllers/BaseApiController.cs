@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRM.Api.Controllers
@@ -7,6 +8,10 @@ namespace CRM.Api.Controllers
     [ApiController]
     public class BaseApiController : ControllerBase
     {
+        private IMediator? _mediator;
+
+        protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetService<IMediator>()
+            ?? throw new InvalidOperationException("IMediator service is unavailable");
 
     }
 }

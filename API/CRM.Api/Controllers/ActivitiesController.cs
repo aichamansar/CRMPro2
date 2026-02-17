@@ -1,27 +1,47 @@
-﻿using CRM.Domain;
+﻿using CRM.Application.Activities.Commands;
+using CRM.Application.Activities.DTOs;
+using CRM.Application.Activities.Queries;
+using CRM.Domain;
 using CRM.Persistence;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CRM.Api.Controllers
 {
-    public class ActivitiesController(AppDbContext context) : BaseApiController
+    public class ActivitiesController : BaseApiController
     {
         [HttpGet]
         public async Task<ActionResult<List<CrmActivity>>> GetActivities()
         {
-            return await context.Activities.ToListAsync();
+            return await Mediator.Send(new GetActivityList.Query());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<CrmActivity>> GetActivityDetail(string id)
         {
-            var activity = await context.Activities.FindAsync(id);
-
-            if (activity == null) return NotFound();
-
-            return activity;
+            return await Mediator.Send(new GetActivityDetail.Query { Id = id });
         }
 
+        [HttpPost]
+        public async Task<ActionResult<string>> CreateActivity(CreateActivityDto activityDto)
+        {
+            return await Mediator.Send(new CreateActivity.Command { ActivityDto = activityDto });
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> EditActivity(CrmActivity activity)
+        {
+            await Mediator.Send(new EditActivity.Command { Activity = activity });
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteActivity(string id)
+        {
+            await Mediator.Send(new DeleteActivity.Command { Id = id });
+            return NoContent();
+        }
     }
 }
