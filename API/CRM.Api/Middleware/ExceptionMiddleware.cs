@@ -1,9 +1,11 @@
-﻿using FluentValidation;
+﻿using CRM.Application.Core;
+using FluentValidation;
 using System;
+using System.Text.Json;
 
 namespace CRM.Api.Middleware
 {
-    public class ExceptionMiddleware : IMiddleware
+    public class ExceptionMiddleware(ILogger<ExceptionMiddleware> logger, IHostEnvironment env) : IMiddleware
     {
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
@@ -17,12 +19,22 @@ namespace CRM.Api.Middleware
             }
             catch (Exception ex)
             {
-                //context.Response.StatusCode = 500;
-                //context.Response.ContentType = "application/json";
-                //var errorResponse = new { message = ex.Message };
-                //return context.Response.WriteAsJsonAsync(errorResponse);
-                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                await HandleException(context, ex);
             }
+        }
+
+        private async Task HandleException(HttpContext context, Exception ex)
+        {
+            logger.LogError(ex, ex.Message);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            var response= env.IsDevelopment()
+                ? new AppException(context.Response.StatusCode, ex.Message, ex.StackTrace)
+                : new AppException(context.Response.StatusCode, ex.Message, null);
+
+            var option = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var json = JsonSerializer.Serialize(response, option);
+            await context.Response.WriteAsync(json);
         }
 
         private static async Task HandleValidationException(HttpContext context, ValidationException ex)

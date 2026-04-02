@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CRM.Application.Activities.DTOs;
+using CRM.Application.Core;
 using CRM.Domain;
 using CRM.Persistence;
 using FluentValidation;
@@ -15,14 +16,14 @@ namespace CRM.Application.Activities.Commands
 {
     public class CreateActivity
     {
-        public class Command : IRequest<string> // Return type
+        public class Command : IRequest<Result<string>> // Return type
         {
             public required CreateActivityDto ActivityDto { get; set; } // Parameter of the API
         }
 
-        public class Handler(AppDbContext context, IMapper mapper) : IRequestHandler<Command, string>
+        public class Handler(AppDbContext context, IMapper mapper) : IRequestHandler<Command, Result<string>>
         {
-            public async Task<string> Handle(Command request, CancellationToken cancellationToken)
+            public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
             {
                 var activity = mapper.Map<CrmActivity>(request.ActivityDto);
 
@@ -36,9 +37,11 @@ namespace CRM.Application.Activities.Commands
 
                 context.Activities.Add(activity);
 
-                await context.SaveChangesAsync(cancellationToken);
+                var result = await context.SaveChangesAsync(cancellationToken) > 0;
 
-                return activity.Id; // Return the ID of the created activity
+                if(!result) return Result<string>.Failure("Failed to create activity", 400);
+
+                return Result<string>.Success(activity.Id); // Return the ID of the created activity
             }
         }
     }

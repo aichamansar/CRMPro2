@@ -1,4 +1,5 @@
-﻿using CRM.Domain;
+﻿using CRM.Application.Core;
+using CRM.Domain;
 using CRM.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +14,18 @@ namespace CRM.Application.Activities.Queries
 {
     public class GetActivityList
     {
-        public class Query : IRequest<List<CrmActivity>> { }
+        public class Query : IRequest<Result<List<CrmActivity>>> { }
 
-        public class Handler(AppDbContext context) : IRequestHandler<Query, List<CrmActivity>>
+        public class Handler(AppDbContext context) : IRequestHandler<Query, Result<List<CrmActivity>>>
         {
-            public async Task<List<CrmActivity>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<List<CrmActivity>>> Handle(Query request, CancellationToken cancellationToken)
             {
-                return await context.Activities.ToListAsync(cancellationToken);
+                var result = await context.Activities.ToListAsync(cancellationToken);
+                if (result == null || !result.Any())
+                {
+                    return Result<List<CrmActivity>>.Failure("No activities found", 404);
+                }
+                return Result<List<CrmActivity>>.Success(result);
             }
         }
     }

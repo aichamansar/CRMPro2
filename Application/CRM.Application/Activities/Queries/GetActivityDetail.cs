@@ -1,4 +1,5 @@
-﻿using CRM.Domain;
+﻿using CRM.Application.Core;
+using CRM.Domain;
 using CRM.Persistence;
 using MediatR;
 using System;
@@ -11,20 +12,20 @@ namespace CRM.Application.Activities.Queries
 {
     public class GetActivityDetail
     {
-        public class Query : IRequest<CrmActivity>// Return type
+        public class Query : IRequest<Result<CrmActivity>>// Return type
         {
             public required string Id { get; set; } // Parameter of the API
         }
 
-        public class Handler(AppDbContext context) : IRequestHandler<Query, CrmActivity>
+        public class Handler(AppDbContext context) : IRequestHandler<Query, Result<CrmActivity>>
         {
-            public async Task<CrmActivity> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<CrmActivity>> Handle(Query request, CancellationToken cancellationToken)
             {
                 var activity = await context.Activities.FindAsync(request.Id, cancellationToken);
 
-                if (activity == null) throw new Exception("Activity not found");
+                if (activity == null) return Result<CrmActivity>.Failure("Cannot find activity", 400);
 
-                return activity;
+                return Result<CrmActivity>.Success(activity);
 
             }
         }

@@ -1,6 +1,7 @@
 ﻿using CRM.Application.Activities.Commands;
 using CRM.Application.Activities.DTOs;
 using CRM.Application.Activities.Queries;
+using CRM.Application.Core;
 using CRM.Domain;
 using CRM.Persistence;
 using MediatR;
@@ -14,34 +15,31 @@ namespace CRM.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<List<CrmActivity>>> GetActivities()
         {
-            return await Mediator.Send(new GetActivityList.Query());
+            return HandleResult(await Mediator.Send(new GetActivityList.Query()));
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<CrmActivity>> GetActivityDetail(string id)
         {
-            return await Mediator.Send(new GetActivityDetail.Query { Id = id });
+            return HandleResult(await Mediator.Send(new GetActivityDetail.Query { Id = id }));
         }
 
         [HttpPost]
-        public async Task<ActionResult<string>> CreateActivity(CreateActivityDto activityDto)
+        public async Task<ActionResult<Result<string>>> CreateActivity(CreateActivityDto activityDto)
         {
-            return await Mediator.Send(new CreateActivity.Command { ActivityDto = activityDto });
+            return HandleResult(await Mediator.Send(new CreateActivity.Command { ActivityDto = activityDto }));
         }
 
         [HttpPut]
-        public async Task<ActionResult> EditActivity(CrmActivity activity)
+        public async Task<ActionResult> EditActivity(EditActivityDto activity)
         {
-            await Mediator.Send(new EditActivity.Command { Activity = activity });
-
-            return NoContent();
+            return HandleResult(await Mediator.Send(new EditActivity.Command { Activity = activity }));
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteActivity(string id)
         {
-            await Mediator.Send(new DeleteActivity.Command { Id = id });
-            return NoContent();
+            return HandleResult(await Mediator.Send(new DeleteActivity.Command { Id = id }));
         }
     }
 }

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CRM.Application.Activities.DTOs
 {
-    public class CreateActivityDto : BaseActivityDto
+    public class EditActivityDto : BaseActivityDto
     {
-        
+        public string Id { get; set; }
     }
 }
