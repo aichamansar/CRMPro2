@@ -12,7 +12,7 @@ namespace CRM.Domain
         /// <summary>
         /// The Id of the Tenant Correspondent to the User
         /// </summary>
-        public string Id { get; set; }
+        public string TenantId { get; set; }
 
         /// <summary>
         /// The role Name

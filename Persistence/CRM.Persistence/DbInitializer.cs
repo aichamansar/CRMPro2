@@ -23,7 +23,7 @@ namespace CRM.Persistence
             {
                 return;
             }
-
+/*
             var now = DateTime.UtcNow;
             const string seedUser = "seed";
             var updateDate = now.ToString("O");
@@ -121,6 +121,7 @@ namespace CRM.Persistence
 
             await context.AddRangeAsync(tenant, adminRole, viewPermission, accountEntity, user, account, contact, address, activity);
             await context.SaveChangesAsync();
+            */
         }
 
         private static void Stamp(DomainBase entity, string user, DateTime now, string updateDate)
